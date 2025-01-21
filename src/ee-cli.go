@@ -32,6 +32,7 @@ import (
 )
 
 type AvailabilityReport struct {
+    //StationID uint32
     ChargerID uint32
     Start uint64
     End uint64
@@ -119,28 +120,28 @@ func parseFile(filepath string) (map[uint32][]uint32, []AvailabilityReport, erro
 }
 
 
-func calculate(stations map[uint32][]uint32, reports []AvailabilityReport) map[uint32]int {
-    chargerUptime := make(map[uint32][][2]uint64) // Charger ID -> uptime intervals [chargerID][]{start, end} 
-    chargerDowntime := make(map[uint32][][2]uint64)
-    for _, report := range reports {
-        if report.Up {
-            chargerUptime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
-        } else {
-            chargerDowntime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
-        }
-    }
-    for _, chargerID := range chargerIDs {
-        if chargerIntervals, exists := chargerUptime[chargerID]; exists {
-            intervals = append(intervals, chargerIntervals...)
-        }
-        if chargerIntervals, exists := chargerDowntime[chargerID]; exists {
-            intervals = append(intervals, chargerIntervals...)
-        }
-    }
-
-
-
-}
+// func calculate(stations map[uint32][]uint32, reports []AvailabilityReport) map[uint32]int {
+//     chargerUptime := make(map[uint32][][2]uint64) // Charger ID -> uptime intervals [chargerID][]{start, end} 
+//     chargerDowntime := make(map[uint32][][2]uint64)
+//     for _, report := range reports {
+//         if report.Up {
+//             chargerUptime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
+//         } else {
+//             chargerDowntime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
+//         }
+//     }
+//     for _, chargerID := range chargerIDs {
+//         if chargerIntervals, exists := chargerUptime[chargerID]; exists {
+//             intervals = append(intervals, chargerIntervals...)
+//         }
+//         if chargerIntervals, exists := chargerDowntime[chargerID]; exists {
+//             intervals = append(intervals, chargerIntervals...)
+//         }
+//     }
+//
+//
+//
+// }
 
 func calculateUptime(stations map[uint32][]uint32, reports []AvailabilityReport) map[uint32]int {
     chargerUptime := make(map[uint32][][2]uint64) // Charger ID -> uptime intervals [chargerID][]{start, end} 
@@ -159,21 +160,35 @@ func calculateUptime(stations map[uint32][]uint32, reports []AvailabilityReport)
         totalUptime := uint64(0)
         totalTime := uint64(0)
         // fmt.Printf("Station ID: %s")
+        var stationIntervals [][2]uint64
+
         for _, chargerID := range chargerIDs {
-            intervals := mergeIntervals(chargerUptime[chargerID])
-            //fmt.Printf("%d: %d, %d", chargerID, intervals[0], intervals[1])
-            for _, interval := range intervals {
-                totalUptime += interval[1] - interval[0]
-                // fmt.Printf("interval %d %d", chargerID, totalUptime)
+            for _, interval := range chargerUptime[chargerID] {
+                stationIntervals = append(stationIntervals, interval)
             }
+            //intervals := mergeIntervals(chargerUptime[chargerID])
+            //fmt.Printf("%d: %d, %d", chargerID, intervals[0], intervals[1])
+            // for _, interval := range intervals {
+            //     totalUptime += interval[1] - interval[0]
+            //     // fmt.Printf("interval %d %d", chargerID, totalUptime)
+            // }
             // fmt.Printf("total %d %d", chargerID, totalUptime)
         }
+        intervals := mergeIntervals(stationIntervals)
+        for _, interval := range intervals {
+            totalUptime += interval[1] - interval[0]
+            // fmt.Printf("interval %d %d", chargerID, totalUptime)
+        }
+
+        // stationIntervals := filterMap(chargerUptime, func(k uint32, v [][2]uint64) bool {
+        //
+        // })
         if len(chargerIDs) > 0 {
             totalTime = calculateTotalTime(chargerUptime, chargerDowntime, chargerIDs)
         }
         if totalTime > 0 {
             stationUptime[stationID] = int((totalUptime * 100) / totalTime)
-            stationUptime[stationID] = min(stationUptime[stationID], 100)
+            // stationUptime[stationID] = min(stationUptime[stationID], 100)
         }
     }
     return stationUptime
@@ -243,14 +258,14 @@ func printResults(uptime map[uint32]int) {
 }
 
 // Filter a map based on a condition
-func filterMap[K comparable, V any](input map[k]V, condition func(K,V) bool) filtered {
+func filterMap[K comparable, V any](input map[K]V, condition func(K,V) bool) map[K]V {
     filtered := make(map[K]V)
     for key, value := range input {
         if condition(key, value) {
             filtered[key] = value
         }
     }
-    return 
+    return filtered
 }
 
 func mapToSlice[K comparable, V any, R any](input map[K]V, transform func(K, V) R) []R {
@@ -269,21 +284,21 @@ func filterAndTransform[K comparable, V any, R any](
     result := []R{}
     for key, value := range input {
         if condition(key, value) {
-            result := append(result, transform(key, value))
+            result = append(result, transform(key, value))
         }
     }
     return result
 }
 
-func filterSlice[T any, R any](input []T, transform func(T) R) []R {
-    result := make([]R, len(input))
-    for _, v:= range input {
-        if condition(v) {
-            result = append(result, v)
-        }
-    }
-    return result
-}
+// func filterSlice[T any, R any](input []T, condition func(T) bool) []R {
+//     result := make([]R, len(input))
+//     for _, v:= range input {
+//         if condition(v) {
+//             result = append(result, v)
+//         }
+//     }
+//     return result
+// }
 
 func mapSlice[T any, R any](input []T, transform func(T) R) []R {
     result := make([]R, len(input))
