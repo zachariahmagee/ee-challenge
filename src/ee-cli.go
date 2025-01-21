@@ -118,6 +118,30 @@ func parseFile(filepath string) (map[uint32][]uint32, []AvailabilityReport, erro
     return stations, reports, scanner.Err()
 }
 
+
+func calculate(stations map[uint32][]uint32, reports []AvailabilityReport) map[uint32]int {
+    chargerUptime := make(map[uint32][][2]uint64) // Charger ID -> uptime intervals [chargerID][]{start, end} 
+    chargerDowntime := make(map[uint32][][2]uint64)
+    for _, report := range reports {
+        if report.Up {
+            chargerUptime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
+        } else {
+            chargerDowntime[report.ChargerID] = append(chargerUptime[report.ChargerID], [2]uint64{report.Start, report.End})
+        }
+    }
+    for _, chargerID := range chargerIDs {
+        if chargerIntervals, exists := chargerUptime[chargerID]; exists {
+            intervals = append(intervals, chargerIntervals...)
+        }
+        if chargerIntervals, exists := chargerDowntime[chargerID]; exists {
+            intervals = append(intervals, chargerIntervals...)
+        }
+    }
+
+
+
+}
+
 func calculateUptime(stations map[uint32][]uint32, reports []AvailabilityReport) map[uint32]int {
     chargerUptime := make(map[uint32][][2]uint64) // Charger ID -> uptime intervals [chargerID][]{start, end} 
     chargerDowntime := make(map[uint32][][2]uint64)
@@ -216,4 +240,55 @@ func printResults(uptime map[uint32]int) {
     for _, key := range keys {
         fmt.Printf("%d %d\n", key, uptime[key])
     }
+}
+
+// Filter a map based on a condition
+func filterMap[K comparable, V any](input map[k]V, condition func(K,V) bool) filtered {
+    filtered := make(map[K]V)
+    for key, value := range input {
+        if condition(key, value) {
+            filtered[key] = value
+        }
+    }
+    return 
+}
+
+func mapToSlice[K comparable, V any, R any](input map[K]V, transform func(K, V) R) []R {
+    result := []R{}
+    for key, value := range input {
+        result = append(result, transform(key, value))
+    }
+    return result
+}
+
+func filterAndTransform[K comparable, V any, R any](
+    input map[K]V,
+    condition func(K, V) bool,
+    transform func(K, V) R,
+) []R {
+    result := []R{}
+    for key, value := range input {
+        if condition(key, value) {
+            result := append(result, transform(key, value))
+        }
+    }
+    return result
+}
+
+func filterSlice[T any, R any](input []T, transform func(T) R) []R {
+    result := make([]R, len(input))
+    for _, v:= range input {
+        if condition(v) {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
+func mapSlice[T any, R any](input []T, transform func(T) R) []R {
+    result := make([]R, len(input))
+    for _, v:= range input {
+        result = append(result, transform(v))
+    }
+    return result
 }
