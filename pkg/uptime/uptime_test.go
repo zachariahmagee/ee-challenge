@@ -27,10 +27,8 @@ func TestMergeReports(t *testing.T) {
 func TestParseFile_ValidInput(t *testing.T) {
     // Arrange
     filepath := "../../test/data/test-input-1.txt"
-
     // Act
     result, err := ParseFile(filepath)
-
     // Assert
     if err != nil {
         t.Fatalf("Expected no error, but got: %v", err)

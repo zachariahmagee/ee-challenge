@@ -91,7 +91,7 @@ func ParseFile(filepath string) (map[uint32][]AvailabilityReport, error) {
             chargerID, _ := strconv.ParseUint(parts[0], 10, 32) // unsigned 32 bit integer
             start, _ := strconv.ParseUint(parts[1], 10, 64) // unsigned 64 bit integer
             end, _ := strconv.ParseUint(parts[2], 10, 64) // unsigned 64 bit integer
-            up := parts[3] == "true" // boolean - up (true), down (false)
+            up := parts[3] == "true" || parts[3] != "false"// boolean - up (true), down (false)
 
             // Find the station ID for the charger and append the report to the station's list of reports.  
             if stationID, exists := chargerStations[uint32(chargerID)]; exists {

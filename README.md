@@ -1,6 +1,6 @@
 # Availability Report Processor
 
-This application reads charger availability data from a file, processes it to calculate uptime percentages for stations, and outputs the results in a sorted format.
+This application reads charger availability data from a file, processes it to calculate uptime percentages for stations, and outputs the results in a sorted format. Read the description of the challenge [here](./description/README.md). Find the bulk of the logic code [here](./pkg/uptime/uptime.go).
 
 ## Features 
 
@@ -77,8 +77,12 @@ The input file consists of two sections:
 
 ## Tests
 
+- Unit tests are located in [uptime_test.go](./pkg/uptime/uptime_test.go)
+- Integration tests can be found in [integration_test.go](./test/integration_test.go)
+
 Run tests with 
 ```sh
 go test ./...
 
 ```
+
