@@ -1,5 +1,13 @@
 package uptime
 
+/*
+Author: Zachariah Magee
+Date: January 22, 2025
+Description: Coding challenge for Software Engineer @ Electric Era Technologies
+Challenge Repo: https://gitlab.com/electric-era-public/coding-challenge-charger-uptime
+*/
+
+
 import (
     "fmt"
     "os"
@@ -120,8 +128,6 @@ func CalculateUptime(stations map[uint32][]AvailabilityReport) map[uint32]int {
         if len(merged) == 0 { 
             continue 
         }
-        // PrintReports(reports)
-        // PrintReports(merged)
         // Filter out only the intervals where the station was up.
         upIntervals := FilterSlice(merged, func (report AvailabilityReport) bool { return report.Up })
         // Calculate the total uptime by summing the durations of the up intervals.

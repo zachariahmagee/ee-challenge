@@ -1,5 +1,12 @@
 package test
 
+/*
+Author: Zachariah Magee
+Date: January 22, 2025
+Description: Coding challenge for Software Engineer @ Electric Era Technologies
+Challenge Repo: https://gitlab.com/electric-era-public/coding-challenge-charger-uptime
+*/
+
 import (
     "testing"
     "reflect"
